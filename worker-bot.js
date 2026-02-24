@@ -24,12 +24,12 @@ export default {
     const sessionId = setCookie.match(/ASP\.NET_SessionId=([^;]+)/)?.[1];
   
     if (!sessionId) {
-      console.error('Failed to get session cookie');
+      console.error('Oturum cerezine ulasilamadi');
       return;
     }
   
     const cookies = `ASP.NET_SessionId=${sessionId}; langCookie=tr`;
-    console.log('Got session:', sessionId);
+    console.log('Oturum alindi:', sessionId);
   
     await fetch('https://www.konsolosluk.gov.tr/Home/Index', {
       headers: {
@@ -77,28 +77,28 @@ export default {
   
     const html = await res5.text();
     //console.log(html)
-    const DAY_THRESHOLD = 10; // change this
+    const DAY_THRESHOLD = 10; // gun esigi - isteginize gore degistirin
   
     const match = html.match(/"DateFormatAppointment":"([^"]+)"/);
     const date = match?.[1];
-    console.log('Date:', date);
+    console.log('Bulunan tarih:', date);
   
     if (date) {
       const appointmentDate = new Date(date);
       const today = new Date();
       const diffDays = Math.ceil((appointmentDate - today) / (1000 * 60 * 60 * 24));
       
-      console.log(`Appointment in ${diffDays} days`);
+      console.log(`Randevu ${diffDays} gun icinde`);
   
       if (diffDays <= DAY_THRESHOLD) {
-        await sendTelegram(env, `✅ London appointment in ${diffDays} days!\nDate: ${date}\nBook now: https://www.konsolosluk.gov.tr/Appointment/Index/5007`);
+        await sendTelegram(env, `✅ Londra konsoloslugunda ${diffDays} gun icinde randevu mevcut!\nTarih: ${date}\nRandevu al: https://www.konsolosluk.gov.tr/Appointment/Index/5007`);
       } else {
-        console.log(`Too far away (${diffDays} days). Threshold: ${DAY_THRESHOLD} days`);
+        console.log(`Cok uzak (${diffDays} gun). Esik: ${DAY_THRESHOLD} gun`);
       }
     } else {
-      console.log('No date found in page');
+      console.log('Sayfada tarih bulunamadi');
     }
-  } // ← this was missing!
+  }
   
   async function sendTelegram(env, message) {
     const res = await fetch(`https://api.telegram.org/bot${env.TELEGRAM_BOT_TOKEN}/sendMessage`, {
@@ -106,5 +106,5 @@ export default {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ chat_id: env.TELEGRAM_CHAT_ID, text: message })
     });
-    if (!res.ok) console.error('Telegram error:', await res.text());
+    if (!res.ok) console.error('Telegram hatasi:', await res.text());
   }
